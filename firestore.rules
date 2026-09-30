@@ -1,0 +1,20 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Leitura pública permitida para o site carregar configurações, galeria e depoimentos
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if true; // Permite edição pelo painel administrativo
+    }
+
+    match /gallery/{itemId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    match /testimonials/{itemId} {
+      allow read: if true;
+      allow write: if true;
+    }
+  }
+}

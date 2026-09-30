@@ -1,0 +1,66 @@
+===================================================================
+POUSADA VILA DE SANTA MARINA - MANUAL DE INSTALAÇÃO NA HOSTINGER
+===================================================================
+
+Parabéns! Este pacote contém o site completo em PHP + Banco de Dados MySQL
+pronto para ser hospedado no seu plano da Hostinger.
+
+-------------------------------------------------------------------
+PASSO 1: CRIAR O BANCO DE DADOS NA HOSTINGER
+-------------------------------------------------------------------
+1. Acesse o painel da Hostinger (hPanel: https://hpanel.hostinger.com)
+2. No menu lateral, clique em "Bancos de Dados" -> "Bancos de Dados MySQL"
+3. Crie um novo banco de dados:
+   - Nome do Banco: ex: u123456789_pousada
+   - Usuário MySQL: ex: u123456789_admin
+   - Senha: Crie uma senha forte e anote-a.
+4. Clique em "Criar".
+
+-------------------------------------------------------------------
+PASSO 2: IMPORTAR O ARQUIVO SQL NO PHPMYADMIN
+-------------------------------------------------------------------
+1. Na mesma página de bancos de dados da Hostinger, localize o banco criado.
+2. Clique no botão "Entrar no phpMyAdmin".
+3. No topo do phpMyAdmin, clique na aba "Importar".
+4. Clique em "Escolher arquivo" e selecione o arquivo: database.sql
+5. Role até o final e clique no botão "Executar" / "Importar".
+6. Pronto! Todas as tabelas e dados já estarão criados!
+
+-------------------------------------------------------------------
+PASSO 3: CONFIGURAR O ARQUIVO config.php
+-------------------------------------------------------------------
+1. Abra o arquivo 'config.php' no seu editor de texto ou direto no Gerenciador de Arquivos da Hostinger.
+2. Localize as linhas 17 a 20 e informe os dados que você criou no Passo 1:
+
+   define('DB_HOST', 'localhost');
+   define('DB_NAME', 'u123456789_pousada');      // Seu nome de banco na Hostinger
+   define('DB_USER', 'u123456789_admin');        // Seu usuário do banco
+   define('DB_PASS', 'SuaSenhaForteAqui123');    // Sua senha do banco
+
+3. Salve o arquivo.
+
+-------------------------------------------------------------------
+PASSO 4: ENVIAR OS ARQUIVOS PARA A HOSTINGER
+-------------------------------------------------------------------
+1. No hPanel da Hostinger, clique em "Arquivos" -> "Gerenciador de Arquivos".
+2. Entre na pasta "public_html".
+3. Envie (Upload) todos os arquivos deste pacote para dentro de "public_html":
+   - index.php
+   - config.php
+   - header.php
+   - footer.php
+   - reveillon.php
+   - carnaval.php
+   - verao.php
+   - admin.php
+   - .htaccess
+4. Pronto! O site já estará funcionando no seu domínio!
+
+-------------------------------------------------------------------
+ACESSO AO PAINEL ADMINISTRATIVO:
+-------------------------------------------------------------------
+- Acesse pelo seu navegador: https://seudominio.com.br/admin.php
+- Usuário inicial: admin
+- Senha inicial: admin123
+(Você poderá alterar textos, telefone de WhatsApp e fotos direto pelo painel!)
+===================================================================

@@ -1,0 +1,6 @@
+{
+  "name": "Pousada Vila de Santa Marina - Caraguatatuba",
+  "description": "Chalés completos perto do mar com piscina, área gourmet, ar-condicionado e muito conforto em Caraguatatuba - SP.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

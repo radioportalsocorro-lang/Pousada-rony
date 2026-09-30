@@ -1,0 +1,66 @@
+{
+  "entities": {
+    "site_settings": {
+      "title": "Site Settings",
+      "description": "Configurações gerais do site, imagens principais e dados de contato",
+      "type": "object",
+      "properties": {
+        "pousadaName": { "type": "string" },
+        "heroTitleLine1": { "type": "string" },
+        "heroTitleLine2": { "type": "string" },
+        "heroSubtitle": { "type": "string" },
+        "heroBadge": { "type": "string" },
+        "heroImage": { "type": "string" },
+        "bgPalmBanner": { "type": "string" },
+        "ctaBannerImage": { "type": "string" },
+        "phone": { "type": "string" },
+        "phoneClean": { "type": "string" },
+        "whatsappMessage": { "type": "string" },
+        "address": { "type": "string" },
+        "instagram": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      }
+    },
+    "gallery_items": {
+      "title": "Gallery Item",
+      "description": "Fotos da galeria da pousada",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "category": { "type": "string" },
+        "tag": { "type": "string" },
+        "image": { "type": "string" },
+        "order": { "type": "number" }
+      },
+      "required": ["title", "category", "image"]
+    },
+    "testimonials": {
+      "title": "Testimonial",
+      "description": "Depoimentos de hóspedes",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "city": { "type": "string" },
+        "rating": { "type": "number" },
+        "comment": { "type": "string" },
+        "avatar": { "type": "string" },
+        "order": { "type": "number" }
+      },
+      "required": ["name", "comment"]
+    }
+  },
+  "firestore": {
+    "/settings/{settingId}": {
+      "schema": "site_settings",
+      "description": "Documentos de configuração do site, como /settings/main"
+    },
+    "/gallery/{itemId}": {
+      "schema": "gallery_items",
+      "description": "Imagens da galeria dos chalés e áreas comuns"
+    },
+    "/testimonials/{itemId}": {
+      "schema": "testimonials",
+      "description": "Avaliações e depoimentos de hóspedes"
+    }
+  }
+}

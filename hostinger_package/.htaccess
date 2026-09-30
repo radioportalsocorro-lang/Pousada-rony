@@ -1,0 +1,24 @@
+# ==============================================================
+# POUSADA VILA DE SANTA MARINA - HOSTINGER .HTACCESS
+# Otimizações de Desempenho, Segurança e Redirecionamento UTF-8
+# ==============================================================
+
+# Forçar Codificação UTF-8
+AddDefaultCharset UTF-8
+
+# Protege arquivos sensíveis de visualização direta
+<FilesMatch "^(database\.sql|config\.php|\.env)">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# Ativar GZIP / Compressão de texto
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json
+</IfModule>
+
+# Habilitar RewriteEngine
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+</IfModule>
