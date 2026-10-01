@@ -1,6 +1,7 @@
 import React from 'react';
 import { Palmtree, Heart, Star } from 'lucide-react';
 import { POUSADA_IMAGES } from '../../data/pousadaData';
+import { SiteSettings } from '../../services/settingsService';
 
 interface AboutProps {
   onOpenPhoto: (img: string, title: string) => void;
@@ -8,13 +9,20 @@ interface AboutProps {
   onOpenBooking?: () => void;
   phoneClean?: string;
   whatsappMessage?: string;
+  settings?: SiteSettings;
 }
 
 export const About: React.FC<AboutProps> = ({ 
   onOpenPhoto, 
   palmBannerImage,
+  settings,
 }) => {
   const palmImg = palmBannerImage || POUSADA_IMAGES.bgPalmBanner;
+  const photo1 = settings?.aboutPhoto1 || POUSADA_IMAGES.chalets;
+  const photo2 = settings?.aboutPhoto2 || POUSADA_IMAGES.foto2;
+  const photo3 = settings?.aboutPhoto3 || POUSADA_IMAGES.pool;
+  const photo4 = settings?.aboutPhoto4 || POUSADA_IMAGES.gourmet;
+  const photo5 = settings?.aboutPhoto5 || POUSADA_IMAGES.room;
 
   return (
     <section id="a-pousada" className="relative -mt-10 sm:-mt-14 lg:-mt-16 pt-20 sm:pt-26 lg:pt-28 pb-12 sm:pb-16 bg-[#FAF7F2] overflow-hidden z-10">
@@ -36,41 +44,44 @@ export const About: React.FC<AboutProps> = ({
             <div className="grid grid-cols-12 gap-3 sm:gap-4 relative z-10">
               {/* Foto 1: Chalés principais com coqueiro e gramado */}
               <div
-                onClick={() => onOpenPhoto(POUSADA_IMAGES.chalets, 'Jardim e Fachada dos Chalés')}
+                onClick={() => onOpenPhoto(photo1, 'Jardim e Fachada dos Chalés')}
                 className="col-span-5 row-span-2 bg-white p-3 sm:p-3.5 rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200/60 cursor-pointer transform -rotate-1 hover:rotate-0 hover:scale-105 transition-all duration-300 group"
               >
                 <div className="h-72 sm:h-96 w-full rounded-xl sm:rounded-2xl overflow-hidden">
                   <img
-                    src={POUSADA_IMAGES.chalets}
+                    src={photo1}
                     alt="Chalés da Pousada Vila de Santa Marina"
+                    referrerPolicy="no-referrer"
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   />
                 </div>
               </div>
 
-              {/* Foto 2: Vista das praias */}
+              {/* Foto 2: Vista do pátio e chalés */}
               <div
-                onClick={() => onOpenPhoto(POUSADA_IMAGES.hero, 'Área Externa e Pátio')}
+                onClick={() => onOpenPhoto(photo2, 'Área Externa e Pátio')}
                 className="col-span-3 bg-white p-2.5 sm:p-3 rounded-2xl sm:rounded-3xl shadow-lg border border-slate-200/60 cursor-pointer transform rotate-1 hover:rotate-0 hover:scale-105 transition-all duration-300 group"
               >
                 <div className="h-34 sm:h-46 w-full rounded-xl sm:rounded-2xl overflow-hidden">
                   <img
-                    src={POUSADA_IMAGES.hero}
+                    src={photo2}
                     alt="Área externa com sol"
+                    referrerPolicy="no-referrer"
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   />
                 </div>
               </div>
 
-              {/* Foto 3: Piscina com espreguiçadeiras */}
+              {/* Foto 3: Piscina com vista para a serra */}
               <div
-                onClick={() => onOpenPhoto(POUSADA_IMAGES.pool, 'Piscina e Área de Lazer')}
+                onClick={() => onOpenPhoto(photo3, 'Piscina e Área de Lazer')}
                 className="col-span-4 bg-white p-2.5 sm:p-3 rounded-2xl sm:rounded-3xl shadow-lg border border-slate-200/60 cursor-pointer transform -rotate-1 hover:rotate-0 hover:scale-105 transition-all duration-300 group"
               >
                 <div className="h-34 sm:h-46 w-full rounded-xl sm:rounded-2xl overflow-hidden">
                   <img
-                    src={POUSADA_IMAGES.pool}
+                    src={photo3}
                     alt="Piscina da pousada"
+                    referrerPolicy="no-referrer"
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   />
                 </div>
@@ -78,13 +89,14 @@ export const About: React.FC<AboutProps> = ({
 
               {/* Foto 4: Área gourmet */}
               <div
-                onClick={() => onOpenPhoto(POUSADA_IMAGES.gourmet, 'Área Gourmet e Churrasqueira')}
+                onClick={() => onOpenPhoto(photo4, 'Área Gourmet e Churrasqueira')}
                 className="col-span-3 bg-white p-2.5 sm:p-3 rounded-2xl sm:rounded-3xl shadow-lg border border-slate-200/60 cursor-pointer transform -rotate-1 hover:rotate-0 hover:scale-105 transition-all duration-300 group"
               >
                 <div className="h-34 sm:h-46 w-full rounded-xl sm:rounded-2xl overflow-hidden">
                   <img
-                    src={POUSADA_IMAGES.gourmet}
+                    src={photo4}
                     alt="Espaço gourmet com churrasqueira"
+                    referrerPolicy="no-referrer"
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   />
                 </div>
@@ -92,13 +104,14 @@ export const About: React.FC<AboutProps> = ({
 
               {/* Foto 5: Quarto e acomodação */}
               <div
-                onClick={() => onOpenPhoto(POUSADA_IMAGES.room, 'Quarto e Acomodações')}
+                onClick={() => onOpenPhoto(photo5, 'Quarto e Acomodações')}
                 className="col-span-4 bg-white p-2.5 sm:p-3 rounded-2xl sm:rounded-3xl shadow-lg border border-slate-200/60 cursor-pointer transform rotate-2 hover:rotate-0 hover:scale-105 transition-all duration-300 group"
               >
                 <div className="h-34 sm:h-46 w-full rounded-xl sm:rounded-2xl overflow-hidden">
                   <img
-                    src={POUSADA_IMAGES.room}
+                    src={photo5}
                     alt="Quarto com cama aconchegante"
+                    referrerPolicy="no-referrer"
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   />
                 </div>

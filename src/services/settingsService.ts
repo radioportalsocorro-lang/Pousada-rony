@@ -67,15 +67,28 @@ export interface SiteSettings {
   address: string;
   instagram: string;
   updatedAt?: string;
+  aboutPhoto1?: string;
+  aboutPhoto2?: string;
+  aboutPhoto3?: string;
+  aboutPhoto4?: string;
+  aboutPhoto5?: string;
+  aboutPhoto6?: string;
 }
 
 export const INITIAL_HERO_PRESETS: HeroPresetItem[] = [
-  { id: '1', name: 'Vista Aérea da Costa de Caraguatatuba', url: POUSADA_IMAGES.hero, active: true },
-  { id: '2', name: 'Piscina Ensolarada da Pousada', url: POUSADA_IMAGES.pool, active: true },
-  { id: '3', name: 'Chalés & Jardim Tropical', url: POUSADA_IMAGES.chalets, active: true },
-  { id: '4', name: 'Área Gourmet e Churrasqueira', url: POUSADA_IMAGES.gourmet, active: true },
-  { id: '5', name: 'Praia e Mar Azul Paradisíaco', url: POUSADA_IMAGES.sunnyBeach, active: true },
-  { id: '6', name: 'Quarto & Chalé Casal', url: POUSADA_IMAGES.room, active: true },
+  { id: '1', name: 'Vista Panorâmica do Mar de Caraguatatuba (Original)', url: POUSADA_IMAGES.hero, active: true },
+  { id: '2', name: 'Chalés Azuis & Jardim com Mamoeiro (Original)', url: POUSADA_IMAGES.chalets, active: true },
+  { id: '3', name: 'Piscina com Deck e Vista para a Serra (Original)', url: POUSADA_IMAGES.pool, active: true },
+  { id: '4', name: 'Área Gourmet e Churrasqueira (Original)', url: POUSADA_IMAGES.gourmet, active: true },
+  { id: '5', name: 'Pátio Central e Alamedas Floridas (Original)', url: POUSADA_IMAGES.foto2, active: true },
+  { id: '6', name: 'Suíte Casal com Ar-Condicionado (Original)', url: POUSADA_IMAGES.room, active: true },
+  { id: '7', name: 'Deck da Piscina e Solarium (Original)', url: POUSADA_IMAGES.sunnyBeach, active: true },
+  { id: '8', name: 'Fachada e Varandas dos Chalés (Original)', url: POUSADA_IMAGES.foto3, active: true },
+  { id: '9', name: 'Conjunto de Chalés na Natureza (Original)', url: POUSADA_IMAGES.foto4, active: true },
+  { id: '10', name: 'Área de Convivência e Varanda (Original)', url: POUSADA_IMAGES.foto6, active: true },
+  { id: '11', name: 'Piscina Ensolarada da Pousada (Original)', url: POUSADA_IMAGES.foto11, active: true },
+  { id: '12', name: 'Dormitório Aconchegante com TV (Original)', url: POUSADA_IMAGES.foto13, active: true },
+  { id: '13', name: 'Panorâmica da Pousada Vila de Santa Marina (Original)', url: POUSADA_IMAGES.foto17, active: true },
 ];
 
 export const DEFAULT_SETTINGS: SiteSettings = {
@@ -94,45 +107,104 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   whatsappMessage: POUSADA_INFO.whatsappMessage,
   address: POUSADA_INFO.address,
   instagram: POUSADA_INFO.instagram,
+  aboutPhoto1: POUSADA_IMAGES.chalets,
+  aboutPhoto2: POUSADA_IMAGES.foto2,
+  aboutPhoto3: POUSADA_IMAGES.pool,
+  aboutPhoto4: POUSADA_IMAGES.gourmet,
+  aboutPhoto5: POUSADA_IMAGES.room,
+  aboutPhoto6: POUSADA_IMAGES.sunnyBeach,
 };
 
 const SETTINGS_DOC_ID = 'main';
 
-// Inicializa o banco com dados padrão se ainda não existirem
+// Limpa URLs antigas de imagens geradas por IA se ainda existirem no banco
+function sanitizePhotoUrl(currentUrl?: string, fallbackUrl: string = ''): string {
+  if (!currentUrl) return fallbackUrl;
+  // Preserva a foto do mar da hero
+  if (currentUrl.includes('caragua_hero') || currentUrl.includes('caragua_sunny_beach')) {
+    return currentUrl;
+  }
+  if (
+    currentUrl.includes('1790811') ||
+    currentUrl.includes('unsplash.com') ||
+    currentUrl.includes('chalets_blue_garden') ||
+    currentUrl.includes('pool_mountains') ||
+    currentUrl.includes('gourmet_churrasqueira') ||
+    currentUrl.includes('courtyard_lawn') ||
+    currentUrl.includes('chalet_bedroom') ||
+    currentUrl.includes('pool_terrace') ||
+    currentUrl.includes('pousada_chalets')
+  ) {
+    return fallbackUrl;
+  }
+  return currentUrl;
+}
+
+// Inicializa o banco com dados padrão se ainda não existirem e sincroniza as novas fotos
 export async function initializeDatabaseIfEmpty(): Promise<SiteSettings> {
   try {
     const docRef = doc(db, 'settings', SETTINGS_DOC_ID);
     const snap = await getDoc(docRef);
 
+    // Sincroniza todas as 16 fotos oficiais na coleção gallery do Firestore
+    for (const item of GALLERY_ITEMS) {
+      const itemRef = doc(db, 'gallery', String(item.id));
+      await setDoc(itemRef, {
+        title: item.title,
+        tag: item.tag,
+        desc: item.desc,
+        image: item.image,
+        order: item.id,
+      }, { merge: true });
+    }
+
     if (snap.exists()) {
       const data = snap.data() as Partial<SiteSettings>;
-      return { 
+
+      // O usuário solicitou explicitamente a foto do mar na Hero
+      const cleanHeroImage = (data.heroImage && data.heroImage.includes('caragua_hero'))
+        ? data.heroImage
+        : POUSADA_IMAGES.hero;
+
+      const cleanAboutPhoto1 = sanitizePhotoUrl(data.aboutPhoto1, POUSADA_IMAGES.chalets);
+      const cleanAboutPhoto2 = sanitizePhotoUrl(data.aboutPhoto2, POUSADA_IMAGES.foto2);
+      const cleanAboutPhoto3 = sanitizePhotoUrl(data.aboutPhoto3, POUSADA_IMAGES.pool);
+      const cleanAboutPhoto4 = sanitizePhotoUrl(data.aboutPhoto4, POUSADA_IMAGES.gourmet);
+      const cleanAboutPhoto5 = sanitizePhotoUrl(data.aboutPhoto5, POUSADA_IMAGES.room);
+      const cleanAboutPhoto6 = sanitizePhotoUrl(data.aboutPhoto6, POUSADA_IMAGES.sunnyBeach);
+
+      const mergedSettings: SiteSettings = { 
         ...DEFAULT_SETTINGS, 
         ...data,
-        heroPresets: data.heroPresets && data.heroPresets.length > 0 ? data.heroPresets : INITIAL_HERO_PRESETS,
+        heroPresets: INITIAL_HERO_PRESETS,
+        heroImage: cleanHeroImage,
+        aboutPhoto1: cleanAboutPhoto1,
+        aboutPhoto2: cleanAboutPhoto2,
+        aboutPhoto3: cleanAboutPhoto3,
+        aboutPhoto4: cleanAboutPhoto4,
+        aboutPhoto5: cleanAboutPhoto5,
+        aboutPhoto6: cleanAboutPhoto6,
         menuItems: data.menuItems && data.menuItems.length > 0 ? data.menuItems : INITIAL_MENU_ITEMS
       };
+
+      // Atualiza o Firestore com as novas fotos oficiais e a foto do mar na hero
+      await setDoc(docRef, {
+        heroPresets: INITIAL_HERO_PRESETS,
+        heroImage: cleanHeroImage,
+        aboutPhoto1: cleanAboutPhoto1,
+        aboutPhoto2: cleanAboutPhoto2,
+        aboutPhoto3: cleanAboutPhoto3,
+        aboutPhoto4: cleanAboutPhoto4,
+        aboutPhoto5: cleanAboutPhoto5,
+        aboutPhoto6: cleanAboutPhoto6,
+        updatedAt: new Date().toISOString()
+      }, { merge: true });
+
+      return mergedSettings;
     } else {
       // Salva configurações padrão no Firestore
       const initial = { ...DEFAULT_SETTINGS, updatedAt: new Date().toISOString() };
       await setDoc(docRef, initial);
-
-      // Também inicializa a galeria se vazia
-      const galCollection = collection(db, 'gallery');
-      const galSnap = await getDocs(galCollection);
-      if (galSnap.empty) {
-        for (const item of GALLERY_ITEMS) {
-          const itemRef = doc(db, 'gallery', String(item.id));
-          await setDoc(itemRef, {
-            title: item.title,
-            tag: item.tag,
-            desc: item.desc,
-            image: item.image,
-            order: item.id,
-          });
-        }
-      }
-
       return initial;
     }
   } catch (err) {
@@ -156,9 +228,27 @@ export function subscribeToSiteSettings(callback: (settings: SiteSettings) => vo
   return onSnapshot(docRef, (docSnap) => {
     if (docSnap.exists()) {
       const data = docSnap.data() as Partial<SiteSettings>;
+      const cleanHeroImage = (data.heroImage && (data.heroImage.includes('caragua_hero') || data.heroImage.includes('data:image')))
+        ? data.heroImage
+        : POUSADA_IMAGES.hero;
+
+      const cleanAboutPhoto1 = sanitizePhotoUrl(data.aboutPhoto1, POUSADA_IMAGES.chalets);
+      const cleanAboutPhoto2 = sanitizePhotoUrl(data.aboutPhoto2, POUSADA_IMAGES.foto2);
+      const cleanAboutPhoto3 = sanitizePhotoUrl(data.aboutPhoto3, POUSADA_IMAGES.pool);
+      const cleanAboutPhoto4 = sanitizePhotoUrl(data.aboutPhoto4, POUSADA_IMAGES.gourmet);
+      const cleanAboutPhoto5 = sanitizePhotoUrl(data.aboutPhoto5, POUSADA_IMAGES.room);
+      const cleanAboutPhoto6 = sanitizePhotoUrl(data.aboutPhoto6, POUSADA_IMAGES.sunnyBeach);
+
       callback({ 
         ...DEFAULT_SETTINGS, 
         ...data,
+        heroImage: cleanHeroImage,
+        aboutPhoto1: cleanAboutPhoto1,
+        aboutPhoto2: cleanAboutPhoto2,
+        aboutPhoto3: cleanAboutPhoto3,
+        aboutPhoto4: cleanAboutPhoto4,
+        aboutPhoto5: cleanAboutPhoto5,
+        aboutPhoto6: cleanAboutPhoto6,
         heroPresets: data.heroPresets && data.heroPresets.length > 0 ? data.heroPresets : INITIAL_HERO_PRESETS,
         menuItems: data.menuItems && data.menuItems.length > 0 ? data.menuItems : INITIAL_MENU_ITEMS
       });

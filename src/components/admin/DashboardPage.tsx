@@ -35,7 +35,8 @@ import {
   FolderPlus,
   PartyPopper,
   SunMedium,
-  Server
+  Server,
+  LayoutGrid
 } from 'lucide-react';
 import { PhpExportModal } from '../pousada/PhpExportModal';
 import { 
@@ -48,7 +49,7 @@ import {
   SubMenuItem,
   INITIAL_MENU_ITEMS
 } from '../../services/settingsService';
-import { POUSADA_IMAGES } from '../../data/pousadaData';
+import { POUSADA_IMAGES, GALLERY_ITEMS } from '../../data/pousadaData';
 
 interface DashboardPageProps {
   settings: SiteSettings;
@@ -105,7 +106,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
   onNavigateToPage,
 }) => {
   const [form, setForm] = useState<SiteSettings>(settings);
-  const [activeTab, setActiveTab] = useState<'menus' | 'hero' | 'presets' | 'images' | 'contact'>('menus');
+  const [activeTab, setActiveTab] = useState<'menus' | 'mosaic' | 'hero' | 'presets' | 'images' | 'contact'>('mosaic');
   const [isSaving, setIsSaving] = useState(false);
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -115,6 +116,9 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
   const presetModalFileInputRef = useRef<HTMLInputElement>(null);
   const palmFileInputRef = useRef<HTMLInputElement>(null);
   const ctaFileInputRef = useRef<HTMLInputElement>(null);
+  const mosaicFileInputRef = useRef<HTMLInputElement>(null);
+  const batchFileInputRef = useRef<HTMLInputElement>(null);
+  const [activeMosaicSlot, setActiveMosaicSlot] = useState<number>(1);
 
   // Estados para modal de adicionar/editar preset
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -292,6 +296,57 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
       setStatusMessage({ type: 'success', text: 'Imagem do computador carregada! Não esqueça de Salvar as Alterações.' });
     } catch (err: any) {
       alert(err?.message || 'Erro ao carregar imagem.');
+    }
+  };
+
+  // Upload individual de foto para os slots do Mosaico (A Pousada)
+  const handleTriggerMosaicUpload = (slotNumber: number) => {
+    setActiveMosaicSlot(slotNumber);
+    if (mosaicFileInputRef.current) {
+      mosaicFileInputRef.current.value = '';
+      mosaicFileInputRef.current.click();
+    }
+  };
+
+  const handleMosaicFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setStatusMessage({ type: 'success', text: `Carregando foto ${activeMosaicSlot} do computador...` });
+      const base64 = await processImageFile(file, 1600, 1200, 0.88);
+      const slotKey = `aboutPhoto${activeMosaicSlot}` as keyof SiteSettings;
+      const updatedForm = { ...form, [slotKey]: base64 };
+      setForm(updatedForm);
+      await handleSave(undefined, updatedForm);
+      setStatusMessage({ type: 'success', text: `Foto ${activeMosaicSlot} atualizada e salva no banco de dados com sucesso!` });
+    } catch (err: any) {
+      setStatusMessage({ type: 'error', text: err?.message || 'Erro ao processar imagem.' });
+    } finally {
+      if (mosaicFileInputRef.current) mosaicFileInputRef.current.value = '';
+    }
+  };
+
+  // Upload em lote (selecionar várias fotos ao mesmo tempo)
+  const handleBatchMosaicUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []);
+    if (files.length === 0) return;
+
+    try {
+      setStatusMessage({ type: 'success', text: `Processando ${files.length} fotos do computador...` });
+      const updated = { ...form };
+      for (let i = 0; i < Math.min(files.length, 5); i++) {
+        const base64 = await processImageFile(files[i], 1600, 1200, 0.88);
+        const slotKey = `aboutPhoto${i + 1}` as keyof SiteSettings;
+        (updated as any)[slotKey] = base64;
+      }
+      setForm(updated);
+      await handleSave(undefined, updated);
+      setStatusMessage({ type: 'success', text: `${Math.min(files.length, 5)} fotos substituídas e salvas no banco com sucesso!` });
+    } catch (err: any) {
+      setStatusMessage({ type: 'error', text: err?.message || 'Erro ao processar lote de imagens.' });
+    } finally {
+      if (batchFileInputRef.current) batchFileInputRef.current.value = '';
     }
   };
 
@@ -641,6 +696,12 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
 
   const navigationItems = [
     {
+      id: 'mosaic' as const,
+      label: 'Fotos do Mosaico (A Pousada)',
+      subtitle: 'Substituir as 5 fotos reais do site',
+      icon: LayoutGrid,
+    },
+    {
       id: 'menus' as const,
       label: 'Gerenciar Menus & Páginas',
       subtitle: 'Editar, mostrar/ocultar e definir Home',
@@ -698,6 +759,25 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
         type="file"
         accept="image/*"
         onChange={(e) => handleCustomFileUpload('ctaBannerImage', e)}
+        className="hidden"
+      />
+
+      {/* Input de arquivo invisível para slot individual do Mosaico */}
+      <input
+        ref={mosaicFileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleMosaicFileUpload}
+        className="hidden"
+      />
+
+      {/* Input de arquivo invisível para upload em lote do Mosaico (até 5 fotos) */}
+      <input
+        ref={batchFileInputRef}
+        type="file"
+        accept="image/*"
+        multiple
+        onChange={handleBatchMosaicUpload}
         className="hidden"
       />
 
@@ -926,6 +1006,334 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
 
           <div className="bg-white rounded-3xl border border-slate-200/90 shadow-sm p-6 sm:p-8">
             <form onSubmit={(e) => handleSave(e)} className="space-y-6">
+
+              {/* ============================================================== */}
+              {/* ABA MOSAICO: AS 5 FOTOS REAIS DO SITE (CONFORTO EM CADA DETALHE) */}
+              {/* ============================================================== */}
+              {activeTab === 'mosaic' && (
+                <div className="space-y-6 animate-in fade-in duration-150">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-slate-100">
+                    <div>
+                      <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold uppercase tracking-wider mb-1">
+                        <Sparkles className="w-3 h-3 text-emerald-600" />
+                        <span>Substituição das Fotos Originais</span>
+                      </div>
+                      <h2 className="text-xl font-bold font-serif text-[#0c2f33] flex items-center gap-2">
+                        <LayoutGrid className="w-5 h-5 text-[#157347]" />
+                        <span>Fotos do Mosaico (A Pousada)</span>
+                      </h2>
+                      <p className="text-xs sm:text-sm text-slate-500 mt-1">
+                        Substitua as 5 fotos que compõem o mosaico <em>"Conforto em cada detalhe"</em> pelas fotos reais que você tirou. As fotos são salvas na hora no banco de dados.
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setForm(prev => ({
+                            ...prev,
+                            aboutPhoto1: POUSADA_IMAGES.chalets,
+                            aboutPhoto2: POUSADA_IMAGES.hero,
+                            aboutPhoto3: POUSADA_IMAGES.pool,
+                            aboutPhoto4: POUSADA_IMAGES.gourmet,
+                            aboutPhoto5: POUSADA_IMAGES.room,
+                          }));
+                          setStatusMessage({ type: 'success', text: '5 Fotos originais da pousada carregadas com sucesso!' });
+                        }}
+                        className="flex items-center justify-center gap-1.5 px-3 py-2.5 bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 text-xs font-bold rounded-xl transition-all cursor-pointer border border-slate-200"
+                        title="Carregar as fotos originais da pousada para o mosaico"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5 text-[#157347]" />
+                        <span>Carregar Fotos Originais</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => batchFileInputRef.current?.click()}
+                        className="flex items-center justify-center gap-2 px-4 py-2.5 bg-[#157347] hover:bg-[#115e3a] active:scale-95 text-white text-xs sm:text-sm font-bold rounded-xl shadow-md transition-all shrink-0 cursor-pointer"
+                      >
+                        <Upload className="w-4 h-4" />
+                        <span>Subir Fotos em Lote (Selecionar 5)</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="bg-amber-50 border border-amber-200 p-4 rounded-2xl flex items-start gap-3">
+                    <AlertCircle className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />
+                    <div className="text-xs text-amber-900 leading-relaxed">
+                      <strong>Como trocar as fotos:</strong> Clique no botão <strong>"Subir do Computador / Celular"</strong> de cada foto abaixo para escolher seus arquivos originais (<code className="bg-amber-100 px-1 py-0.5 rounded font-mono text-[11px]">.webp, .jpg, .png</code>). Ou use o botão acima para enviar até 5 fotos de uma vez!
+                    </div>
+                  </div>
+
+                  {/* Os 5 Slots de Fotos do Mosaico */}
+                  <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
+                    {/* Slot 1: Foto Vertical Principal (Esquerda) */}
+                    <div className="md:col-span-6 bg-slate-50 border border-slate-200 rounded-2xl p-4.5 space-y-3 flex flex-col justify-between">
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-xs font-bold text-[#0c2f33] flex items-center gap-1.5">
+                            <span className="w-5 h-5 rounded-full bg-[#157347] text-white flex items-center justify-center text-[11px] font-bold">1</span>
+                            Foto Principal Vertical (Chalés & Jardim)
+                          </span>
+                          <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">
+                            Esquerda Grande
+                          </span>
+                        </div>
+                        <div className="h-56 w-full rounded-xl overflow-hidden bg-slate-200 border border-slate-300 relative group">
+                          <img
+                            src={form.aboutPhoto1 || POUSADA_IMAGES.chalets}
+                            alt="Foto 1 do Mosaico"
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2 pt-1">
+                        <button
+                          type="button"
+                          onClick={() => handleTriggerMosaicUpload(1)}
+                          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[#0c2f33] hover:bg-[#157347] text-white text-xs font-bold transition-all cursor-pointer shadow-xs"
+                        >
+                          <Upload className="w-3.5 h-3.5" />
+                          <span>Subir Foto 1 do Computador</span>
+                        </button>
+                        <input
+                          type="text"
+                          placeholder="Ou cole a URL da Foto 1..."
+                          value={form.aboutPhoto1 || ''}
+                          onChange={(e) => setForm({ ...form, aboutPhoto1: e.target.value })}
+                          className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-300 font-mono text-slate-600 focus:ring-1 focus:ring-[#157347]"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Coluna Direita com os 4 Slots (2x2) */}
+                    <div className="md:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {/* Slot 2: Centro Superior (Pátio / Entrada) */}
+                      <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 space-y-2.5 flex flex-col justify-between">
+                        <div>
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-xs font-bold text-[#0c2f33] flex items-center gap-1">
+                              <span className="w-4 h-4 rounded-full bg-[#157347] text-white flex items-center justify-center text-[10px] font-bold">2</span>
+                              Pátio / Vista
+                            </span>
+                            <span className="text-[9px] bg-slate-200 text-slate-700 font-bold px-1.5 py-0.5 rounded">
+                              Centro Sup.
+                            </span>
+                          </div>
+                          <div className="h-28 w-full rounded-lg overflow-hidden bg-slate-200 border border-slate-300">
+                            <img
+                              src={form.aboutPhoto2 || POUSADA_IMAGES.hero}
+                              alt="Foto 2"
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <button
+                            type="button"
+                            onClick={() => handleTriggerMosaicUpload(2)}
+                            className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg bg-[#0c2f33] hover:bg-[#157347] text-white text-[11px] font-bold transition-all cursor-pointer"
+                          >
+                            <Upload className="w-3 h-3" />
+                            <span>Subir Foto 2</span>
+                          </button>
+                          <input
+                            type="text"
+                            placeholder="URL da Foto 2..."
+                            value={form.aboutPhoto2 || ''}
+                            onChange={(e) => setForm({ ...form, aboutPhoto2: e.target.value })}
+                            className="w-full px-2.5 py-1 text-[11px] rounded border border-slate-300 font-mono text-slate-600"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Slot 3: Direita Superior (Piscina) */}
+                      <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 space-y-2.5 flex flex-col justify-between">
+                        <div>
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-xs font-bold text-[#0c2f33] flex items-center gap-1">
+                              <span className="w-4 h-4 rounded-full bg-[#157347] text-white flex items-center justify-center text-[10px] font-bold">3</span>
+                              Piscina & Lazer
+                            </span>
+                            <span className="text-[9px] bg-slate-200 text-slate-700 font-bold px-1.5 py-0.5 rounded">
+                              Direita Sup.
+                            </span>
+                          </div>
+                          <div className="h-28 w-full rounded-lg overflow-hidden bg-slate-200 border border-slate-300">
+                            <img
+                              src={form.aboutPhoto3 || POUSADA_IMAGES.pool}
+                              alt="Foto 3"
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <button
+                            type="button"
+                            onClick={() => handleTriggerMosaicUpload(3)}
+                            className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg bg-[#0c2f33] hover:bg-[#157347] text-white text-[11px] font-bold transition-all cursor-pointer"
+                          >
+                            <Upload className="w-3 h-3" />
+                            <span>Subir Foto 3</span>
+                          </button>
+                          <input
+                            type="text"
+                            placeholder="URL da Foto 3..."
+                            value={form.aboutPhoto3 || ''}
+                            onChange={(e) => setForm({ ...form, aboutPhoto3: e.target.value })}
+                            className="w-full px-2.5 py-1 text-[11px] rounded border border-slate-300 font-mono text-slate-600"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Slot 4: Centro Inferior (Churrasqueira / Área Gourmet) */}
+                      <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 space-y-2.5 flex flex-col justify-between">
+                        <div>
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-xs font-bold text-[#0c2f33] flex items-center gap-1">
+                              <span className="w-4 h-4 rounded-full bg-[#157347] text-white flex items-center justify-center text-[10px] font-bold">4</span>
+                              Área Gourmet
+                            </span>
+                            <span className="text-[9px] bg-slate-200 text-slate-700 font-bold px-1.5 py-0.5 rounded">
+                              Centro Inf.
+                            </span>
+                          </div>
+                          <div className="h-28 w-full rounded-lg overflow-hidden bg-slate-200 border border-slate-300">
+                            <img
+                              src={form.aboutPhoto4 || POUSADA_IMAGES.gourmet}
+                              alt="Foto 4"
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <button
+                            type="button"
+                            onClick={() => handleTriggerMosaicUpload(4)}
+                            className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg bg-[#0c2f33] hover:bg-[#157347] text-white text-[11px] font-bold transition-all cursor-pointer"
+                          >
+                            <Upload className="w-3 h-3" />
+                            <span>Subir Foto 4</span>
+                          </button>
+                          <input
+                            type="text"
+                            placeholder="URL da Foto 4..."
+                            value={form.aboutPhoto4 || ''}
+                            onChange={(e) => setForm({ ...form, aboutPhoto4: e.target.value })}
+                            className="w-full px-2.5 py-1 text-[11px] rounded border border-slate-300 font-mono text-slate-600"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Slot 5: Direita Inferior (Quarto / Acomodação) */}
+                      <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 space-y-2.5 flex flex-col justify-between">
+                        <div>
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-xs font-bold text-[#0c2f33] flex items-center gap-1">
+                              <span className="w-4 h-4 rounded-full bg-[#157347] text-white flex items-center justify-center text-[10px] font-bold">5</span>
+                              Quarto & Chalé
+                            </span>
+                            <span className="text-[9px] bg-slate-200 text-slate-700 font-bold px-1.5 py-0.5 rounded">
+                              Direita Inf.
+                            </span>
+                          </div>
+                          <div className="h-28 w-full rounded-lg overflow-hidden bg-slate-200 border border-slate-300">
+                            <img
+                              src={form.aboutPhoto5 || POUSADA_IMAGES.room}
+                              alt="Foto 5"
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <button
+                            type="button"
+                            onClick={() => handleTriggerMosaicUpload(5)}
+                            className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg bg-[#0c2f33] hover:bg-[#157347] text-white text-[11px] font-bold transition-all cursor-pointer"
+                          >
+                            <Upload className="w-3 h-3" />
+                            <span>Subir Foto 5</span>
+                          </button>
+                          <input
+                            type="text"
+                            placeholder="URL da Foto 5..."
+                            value={form.aboutPhoto5 || ''}
+                            onChange={(e) => setForm({ ...form, aboutPhoto5: e.target.value })}
+                            className="w-full px-2.5 py-1 text-[11px] rounded border border-slate-300 font-mono text-slate-600"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Banco de Fotos Originais da Pousada (16 Fotos Disponíveis) */}
+                  <div className="mt-8 pt-6 border-t border-slate-200">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                      <div>
+                        <h3 className="text-sm font-bold text-[#0c2f33] flex items-center gap-2">
+                          <ImageIcon className="w-4 h-4 text-[#157347]" />
+                          <span>Banco de 16 Fotos Originais da Pousada</span>
+                        </h3>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          Clique nos botões abaixo de cada foto para definir em qual posição do site você quer colocá-la (Hero ou Slots 1 a 5).
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                      {GALLERY_ITEMS.map((item) => (
+                        <div key={item.id} className="bg-slate-50 border border-slate-200 rounded-xl p-2.5 flex flex-col justify-between group hover:border-[#157347] transition-all">
+                          <div className="h-28 w-full rounded-lg overflow-hidden bg-slate-200 mb-2 relative">
+                            <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                            <span className="absolute bottom-1 left-1 bg-black/70 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">
+                              Foto {item.id}
+                            </span>
+                          </div>
+                          <div className="space-y-1.5">
+                            <p className="text-[11px] font-bold text-slate-800 line-clamp-1" title={item.title}>
+                              {item.title}
+                            </p>
+                            <div className="flex items-center gap-1 flex-wrap">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setForm(prev => ({ ...prev, heroImage: item.image }));
+                                  setStatusMessage({ type: 'success', text: `Foto ${item.id} definida como Banner Principal (Hero)!` });
+                                }}
+                                className="text-[10px] bg-slate-200 hover:bg-[#157347] hover:text-white px-1.5 py-0.5 rounded font-bold transition-colors cursor-pointer"
+                                title="Definir como Banner do Início"
+                              >
+                                Hero
+                              </button>
+                              {[1, 2, 3, 4, 5].map((slot) => (
+                                <button
+                                  key={slot}
+                                  type="button"
+                                  onClick={() => {
+                                    const key = `aboutPhoto${slot}` as keyof SiteSettings;
+                                    setForm(prev => ({ ...prev, [key]: item.image }));
+                                    setStatusMessage({ type: 'success', text: `Foto ${item.id} colocada no Slot ${slot} do mosaico!` });
+                                  }}
+                                  className="text-[10px] bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-[#157347] hover:text-white px-1.5 py-0.5 rounded font-bold transition-colors cursor-pointer"
+                                  title={`Definir no Slot ${slot} do Mosaico`}
+                                >
+                                  Slot {slot}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* ============================================================== */}
               {/* ABA 0: NOVO SISTEMA DE MENUS & PÁGINAS (MOSTRAR / NÃO MOSTRAR / HOME) */}

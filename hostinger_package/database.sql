@@ -32,7 +32,7 @@ INSERT INTO `configuracoes` (`chave`, `valor`, `descricao`) VALUES
 ('hero_tag', 'POUSADA VILA DE SANTA MARINA · CARAGUATATUBA', 'Tag no topo do banner'),
 ('hero_titulo', 'Fique perto do mar com o conforto que você merece', 'Título principal da Home'),
 ('hero_subtitulo', 'Chalés completos para casais e famílias com piscina, área de churrasqueiras e a tranquilidade que você procura no litoral de Caraguatatuba.', 'Subtítulo da Home'),
-('hero_imagem', 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1920&q=80', 'Imagem de fundo da Home');
+('hero_imagem', 'images/caragua_hero.jpg', 'Imagem de fundo da Home');
 
 -- --------------------------------------------------------
 -- 2. Tabela de Menus e Navegação
@@ -92,9 +92,9 @@ CREATE TABLE IF NOT EXISTS `chales` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO `chales` (`titulo`, `capacidade`, `descricao`, `badge`, `imagem_url`, `itens_json`, `ordem`) VALUES
-('Chalé Casal Aconchego', 'Até 2 Pessoas', 'Ambiente privativo e acolhedor, perfeito para descansar a dois com ar-condicionado, TV e cozinha compacta prática.', 'Ideal para Casais', 'https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=1000&q=80', '["Cama Queen Size", "Ar-Condicionado Split", "Cozinha Compacta com Frigobar", "TV SKY e Wi-Fi", "1 Vaga de Garagem"]', 1),
-('Chalé Família Confort', 'Até 4 Pessoas', 'Espaçoso e versátil para a família inteira. Cozinha completa equipada com fogão, geladeira e utensílios.', 'Mais Procurado', 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1000&q=80', '["1 Cama Casal + 1 Bicama", "Ar-Condicionado e Ventilador", "Cozinha Completa c/ Fogão e Geladeira", "Varanda com Vista para o Jardim", "Estacionamento Privativo"]', 2),
-('Chalé Master Família & Amigos', 'Até 6 Pessoas', 'O máximo de espaço e comodidade para grupos maiores curtirem férias inesquecíveis juntos no Litoral Norte.', 'Espaço Amplo', 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1000&q=80', '["Dormitório Privativo + Sala", "Cozinha Grande Completa", "TV SKY, Wi-Fi Fibra Rápida", "Churrasqueiras Próximas", "Até 2 Vagas de Garagem"]', 3);
+('Chalé Casal Aconchego', 'Até 2 Pessoas', 'Ambiente privativo e acolhedor, perfeito para descansar a dois com ar-condicionado, TV e cozinha compacta prática.', 'Ideal para Casais', 'images/foto12.webp', '["Cama Queen Size", "Ar-Condicionado Split", "Cozinha Compacta com Frigobar", "TV SKY e Wi-Fi", "1 Vaga de Garagem"]', 1),
+('Chalé Família Confort', 'Até 4 Pessoas', 'Espaçoso e versátil para a família inteira. Cozinha completa equipada com fogão, geladeira e utensílios.', 'Mais Procurado', 'images/foto1.webp', '["1 Cama Casal + 1 Bicama", "Ar-Condicionado e Ventilador", "Cozinha Completa c/ Fogão e Geladeira", "Varanda com Vista para o Jardim", "Estacionamento Privativo"]', 2),
+('Chalé Master Família & Amigos', 'Até 6 Pessoas', 'O máximo de espaço e comodidade para grupos maiores curtirem férias inesquecíveis juntos no Litoral Norte.', 'Espaço Amplo', 'images/foto4.webp', '["Dormitório Privativo + Sala", "Cozinha Grande Completa", "TV SKY, Wi-Fi Fibra Rápida", "Churrasqueiras Próximas", "Até 2 Vagas de Garagem"]', 3);
 
 -- --------------------------------------------------------
 -- 5. Tabela de Galeria de Fotos
@@ -109,11 +109,22 @@ CREATE TABLE IF NOT EXISTS `galeria` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO `galeria` (`titulo`, `categoria`, `imagem_url`, `ordem`) VALUES
-('Piscina Ensolarada da Pousada', 'Piscina', 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1200&q=80', 1),
-('Chalés em Meio à Natureza', 'Chalés', 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=80', 2),
-('Quarto Confortável com Ar-Condicionado', 'Quartos', 'https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=1200&q=80', 3),
-('Área de Churrasqueiras e Convivência', 'Lazer', 'https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=1200&q=80', 4),
-('Praias Paradisíacas de Caraguatatuba', 'Região', 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80', 5);
+('Chalés Azuis e Jardim com Mamoeiro', 'Chalés & Jardim', 'images/foto1.webp', 1),
+('Piscina com Deck de Madeira e Vista da Serra', 'Piscina & Serra', 'images/foto8.webp', 2),
+('Churrasqueira e Varanda Gourmet', 'Área Gourmet', 'images/foto5.webp', 3),
+('Pátio Central e Alamedas Floridas', 'Pátio Central', 'images/foto2.webp', 4),
+('Suíte Casal com Ar-Condicionado', 'Acomodações', 'images/foto12.webp', 5),
+('Deck da Piscina e Solarium', 'Lazer & Solarium', 'images/foto9.webp', 6),
+('Fachada e Varandas dos Chalés', 'Chalés & Jardim', 'images/foto3.webp', 7),
+('Conjunto de Chalés na Vila de Santa Marina', 'Chalés & Jardim', 'images/foto4.webp', 8),
+('Área de Convivência e Varanda com Mesas', 'Área Gourmet', 'images/foto6.webp', 9),
+('Jardim Florido e Frutíferas', 'Chalés & Jardim', 'images/foto7.webp', 10),
+('Piscina Ensolarada da Pousada', 'Piscina & Lazer', 'images/foto11.webp', 11),
+('Dormitório Aconchegante com TV', 'Acomodações', 'images/foto13.webp', 12),
+('Estrutura Completa de Acomodações', 'Acomodações', 'images/foto14.webp', 13),
+('Chalés e Paisagismo Exclusivo', 'Chalés & Jardim', 'images/foto16.webp', 14),
+('Panorâmica das Instalações', 'Chalés & Jardim', 'images/foto17.webp', 15),
+('Tranquilidade e Acolhimento na Pousada', 'Estrutura Geral', 'images/foto18.webp', 16);
 
 -- --------------------------------------------------------
 -- 6. Tabela de Usuários do Painel Admin (Hostinger)

@@ -205,6 +205,7 @@ export default function App() {
           onOpenBooking={() => setIsBookingOpen(true)}
           phoneClean={settings.phoneClean}
           whatsappMessage={settings.whatsappMessage}
+          settings={settings}
         />
 
         {/* 4. Nossa Estrutura: 6 Comodidades */}
